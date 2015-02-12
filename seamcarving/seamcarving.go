@@ -19,16 +19,19 @@ type Seam struct {
 
 func Resize(source image.Image, targetHeight, targetWidth int) (image.Image, error) {
   rec := source.Bounds()
-  energies := initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
+  energies := initializeEnergies(rec, Energy1) // TODO: don't just use Energy1 function
+  return nil, nil
 }
 
-func initializeEnergies(img image.Image, funcType EnergyFunction) ([][]float64) {
-  var energies [rec.Max.X - rec.Min.X][rec.Max.Y - rec.Min.X]float64
+func initializeEnergies(rec image.Rectangle, funcType EnergyFunction) ([][]float64) {
+  height := rec.Max.X - rec.Min.X
+  width := rec.Max.Y - rec.Min.Y
 
+  energies := float64Matrix(height, width)
   for i := rec.Min.X; i < rec.Max.X; i++ {
     for j := rec.Min.Y; i < rec.Max.Y; j++ {
       xIndex := i - rec.Min.X
-      yIndex := y - rec.Min.Y
+      yIndex := j - rec.Min.Y
       energies[xIndex][yIndex] = energyFunction(source, i, j, funcType)
     }
   }
@@ -36,33 +39,62 @@ func initializeEnergies(img image.Image, funcType EnergyFunction) ([][]float64) 
   return energies
 }
 
+func float64Matrix(height, width int) ([][]float64) {
+  matrix := make([][]float64, height)
+  for i, _ := range matrix {
+    matrix[i] = make([]float64, width)
+  }
+
+  return matrix
+}
+
+func intMatrix(height, width int) ([][]int) {
+  matrix := make([][]int, height)
+  for i, _ := range matrix {
+    matrix[i] = make([]int, width)
+  }
+
+  return matrix
+}
+
 func energyFunction(img image.Image, i, j int, funcType EnergyFunction) (float64) {
   return 1.0
+}
+
+func shouldReadjust(i, j int, candidate float64, matrix [][]float64, adjusted bool) (bool) {
+  height := len(matrix)
+  width := len(matrix[0])
+
+  return inMatrix(i, j, width, height) && (!adjusted || matrix[i][j] < candidate)
 }
 
 func computeSeams(energies [][]float64, numSeams int) ([]Seam) {
   height := len(energies)
   width := len(energies[0])
 
-  var seamTable [width][height]float64
-  var parentTable [width][height]int
+  seamTable := float64Matrix(height, width)
+  parentTable := intMatrix(height, width)
 
   for i := 0; i < height; i++ {
     for j := 0; j < width; j++ {
-      candidate := 0
+      var candidate float64
+      adjusted := false
       parent := 0
 
-      if inMatrix(i-1, j-1, width, height) {
+      if shouldReadjust(i-1, j-1, candidate, seamTable, adjusted) {
         parent = -1
-        candidate = math.Min(candidate, seamTable[i-1][j-1])
+        adjusted = true
+        candidate = seamTable[i-1][j-1]
       }
-      if inMatrix(i-1, j, width, height) {
+      if shouldReadjust(i-1, j, candidate, seamTable, adjusted) {
         parent = 0
-        candidate = math.Min(candidate, seamTable[i-1][j])
+        adjusted = true
+        candidate = seamTable[i-1][j]
       }
-      if inMatrix(i-1, j+1, width, height) {
+      if shouldReadjust(i-1, j+1, candidate, seamTable, adjusted) {
         parent = 1
-        candidate = math.Min(candidate, seamTable[i-1][j+1])
+        adjusted = true
+        candidate = seamTable[i-1][j+1]
       }
 
       parentTable[i][j] = parent
