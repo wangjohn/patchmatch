@@ -18,12 +18,12 @@ type Seam struct {
 }
 
 func Resize(source image.Image, targetHeight, targetWidth int) (image.Image, error) {
-  rec := source.Bounds()
-  energies := initializeEnergies(rec, Energy1) // TODO: don't just use Energy1 function
+  energies := initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
   return nil, nil
 }
 
-func initializeEnergies(rec image.Rectangle, funcType EnergyFunction) ([][]float64) {
+func initializeEnergies(img image.Image, funcType EnergyFunction) ([][]float64) {
+  rec := img.Bounds()
   height := rec.Max.X - rec.Min.X
   width := rec.Max.Y - rec.Min.Y
 
@@ -32,7 +32,7 @@ func initializeEnergies(rec image.Rectangle, funcType EnergyFunction) ([][]float
     for j := rec.Min.Y; i < rec.Max.Y; j++ {
       xIndex := i - rec.Min.X
       yIndex := j - rec.Min.Y
-      energies[xIndex][yIndex] = energyFunction(source, i, j, funcType)
+      energies[xIndex][yIndex] = energyFunction(img, i, j, funcType)
     }
   }
 
