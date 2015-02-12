@@ -102,7 +102,8 @@ func computeSeams(energies [][]float64, numSeams int) ([]Seam) {
     }
   }
 
-  lastRowClone := copy(seamTable[height-1])
+  var lastRowClone []float64
+  copy(lastRowClone, seamTable[height-1])
   quickselect.QuickSelect(quickselect.Float64Slice(lastRowClone), numSeams)
   thresholdEnergy := lastRowClone[numSeams-1]
 
