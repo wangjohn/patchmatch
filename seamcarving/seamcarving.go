@@ -18,7 +18,7 @@ type Seam struct {
 }
 
 func Resize(source image.Image, targetHeight, targetWidth int) (image.Image, error) {
-  energies := initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
+  initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
   return nil, nil
 }
 
@@ -29,7 +29,7 @@ func initializeEnergies(img image.Image, funcType EnergyFunction) ([][]float64) 
 
   energies := float64Matrix(height, width)
   for i := rec.Min.X; i < rec.Max.X; i++ {
-    for j := rec.Min.Y; i < rec.Max.Y; j++ {
+    for j := rec.Min.Y; j < rec.Max.Y; j++ {
       xIndex := i - rec.Min.X
       yIndex := j - rec.Min.Y
       energies[xIndex][yIndex] = energyFunction(img, i, j, funcType)
@@ -58,7 +58,7 @@ func intMatrix(height, width int) ([][]int) {
 }
 
 func energyFunction(img image.Image, i, j int, funcType EnergyFunction) (float64) {
-  return 1.0
+  return 0.0
 }
 
 func shouldReadjust(i, j int, candidate float64, matrix [][]float64, adjusted bool) (bool) {
