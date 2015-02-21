@@ -33,3 +33,44 @@ func TestInitializatingEnergies(t *testing.T) {
     }
   }
 }
+
+func TestComputeSeams(t *testing.T) {
+  fixtures := []struct {
+    Energies [][]float64
+    NumSeams int
+    ExpectedSeams []Seam
+  }{
+  }
+
+  for _, fixture := range fixtures {
+    resultSeams := computeSeams(fixture.Energies, fixture.NumSeams)
+    for _, expectedSeam := range fixture.ExpectedSeams {
+      var hasExpectedSeam bool
+      for _, resultSeam := range resultSeams {
+        if isMatchingSeam(expectedSeam, resultSeam) {
+          hasExpectedSeam = true
+          break
+        }
+      }
+
+      if !hasExpectedSeam {
+        t.Errorf("Did not find the expected seam: %v", expectedSeam)
+      }
+    }
+  }
+}
+
+func isMatchingSeam(seam1, seam2 Seam) (bool) {
+  if len(seam1.Points) != len(seam2.Points) {
+    return false
+  }
+
+  for i, s1point := range seam1.Points {
+    s2point := seam2.Points[i]
+    if s1point.X != s2point.X || s1point.Y != s2point.Y {
+      return false
+    }
+  }
+
+  return true
+}

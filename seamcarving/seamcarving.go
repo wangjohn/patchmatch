@@ -18,7 +18,18 @@ type Seam struct {
 }
 
 func Resize(source image.Image, targetHeight, targetWidth int) (image.Image, error) {
-  initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
+  energies := initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
+  widthDiff := source.Bounds().Dx() - targetWidth
+  heightDiff := source.Bounds().Dy() - targetHeight
+
+  var numSeams int
+  if widthDiff > heightDiff {
+    numSeams = widthDiff - heightDiff
+  } else {
+    numSeams = heightDiff - widthDiff
+  }
+
+  seams := computeSeams(energies, numSeams)
   return nil, nil
 }
 
