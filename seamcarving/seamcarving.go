@@ -19,18 +19,53 @@ type Seam struct {
 
 func Resize(source image.Image, targetHeight, targetWidth int) (image.Image, error) {
   energies := initializeEnergies(source, Energy1) // TODO: don't just use Energy1 function
-  widthDiff := source.Bounds().Dx() - targetWidth
-  heightDiff := source.Bounds().Dy() - targetHeight
+  bounds := source.Bounds()
+  widthDiff := bounds.Dx() - targetWidth
+  heightDiff := bounds.Dy() - targetHeight
 
-  var numSeams int
+  var resultImage image.Image
+  var seams []Seam
+  var newMax image.Point
+
+  // TODO: figure out how to resize correctly.
   if widthDiff > heightDiff {
-    numSeams = widthDiff - heightDiff
+    seams = computeSeams(energies, widthDiff)
+    newMax = image.Point{bounds.Max.X - widthDiff, bounds.Max.Y}
   } else {
-    numSeams = heightDiff - widthDiff
+    seams = computeSeams(energies, heightDiff)
+    newMax = image.Point{bounds.Max.X, bounds.Max.Y - heightDiff}
   }
 
-  seams := computeSeams(energies, numSeams)
-  return nil, nil
+  newBounds := image.Rectangle{bounds.Min, newMax}
+  resultImage, err := removeSeams(source, seams, newBounds)
+  if err != nil {
+    return nil, err
+  }
+
+  return resultImage, nil
+}
+
+func removeSeams(source image.Image, seams []Seam, newBounds image.Rectangle) (image.Image, error) {
+  removedPoints := make(map[image.Point]bool)
+  for _, seam := range seams {
+    for _, point := range seam.Points {
+      removedPoints[point] = true
+    }
+  }
+
+  bounds := source.Bounds()
+  newImage := image.NewRGBA(newBounds)
+  for i := bounds.Min.X; i < bounds.Max.X; i++ {
+    for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
+      curPoint := image.Point{i, j}
+      _, removed := removedPoints[curPoint]
+      if !removed {
+        newImage.Set(i, j, source.At(i, j))
+      }
+    }
+  }
+
+  return newImage, nil
 }
 
 func initializeEnergies(img image.Image, funcType EnergyFunction) ([][]float64) {
